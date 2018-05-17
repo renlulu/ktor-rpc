@@ -18,15 +18,22 @@ import java.io.FileInputStream
 import java.time.Duration
 import java.util.*
 
+
+
 val properties = Properties()
 
 
 val proxy = run {
-    val host = (properties["host"] ?: "localhost").toString()
-    val username = (properties["username"] ?: "user1").toString()
-    val password = (properties["password"] ?: "letmein").toString()
-    val rpcPort = (properties["rpcPort"] ?: "10053").toString().toInt()
 
+    val propertiesFile = System.getProperty("user.dir") + "/config.properties";
+    val inputStream = FileInputStream(propertiesFile)
+    properties.load(inputStream)
+    properties.forEach{(k, v) -> println("key = $k, value = $v")}
+    val host = System.getenv("host") ?: (properties["host"] ?: "localhost").toString()
+    val username = System.getenv("username") ?: (properties["username"] ?: "user1").toString()
+    val password = System.getenv("password") ?: (properties["password"] ?: "letmein").toString()
+    val rpcPort = (System.getenv("rpcPort") ?: (properties["rpcPort"] ?: "10053")).toString().toInt()
+    println("host is $host,username is $username,password is $password,rpc port is $rpcPort")
     val rpcAddress = NetworkHostAndPort(host, rpcPort)
     val rpcClient = CordaRPCClient(rpcAddress)
     val rpcConnection = rpcClient.start(username, password)
@@ -53,12 +60,8 @@ fun Application.module() {
 }
 
 fun main(args: Array<String>) {
-    val propertiesFile = System.getProperty("user.dir") + "/config.properties";
-    val inputStream = FileInputStream(propertiesFile)
-    properties.load(inputStream)
-    properties.forEach{(k, v) -> println("key = $k, value = $v")}
 
-    val port = (properties["port"] ?: "9090").toString()
+    val port = System.getenv("port") ?: (properties["port"] ?: "9090").toString()
 
     embeddedServer(Netty, port = port.toInt(), watchPaths = listOf("MainKt"), module = Application::module).start()
 
