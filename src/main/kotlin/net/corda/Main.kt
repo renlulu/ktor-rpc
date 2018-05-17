@@ -25,20 +25,28 @@ val properties = Properties()
 
 val proxy = run {
 
-    val propertiesFile = System.getProperty("user.dir") + "/config.properties";
-    val inputStream = FileInputStream(propertiesFile)
-    properties.load(inputStream)
-    properties.forEach{(k, v) -> println("key = $k, value = $v")}
-    val host = System.getenv("host") ?: (properties["host"] ?: "localhost").toString()
-    val username = System.getenv("username") ?: (properties["username"] ?: "user1").toString()
-    val password = System.getenv("password") ?: (properties["password"] ?: "letmein").toString()
-    val rpcPort = (System.getenv("rpcPort") ?: (properties["rpcPort"] ?: "10053")).toString().toInt()
+    properties()
+    val host = env("host") ?: (properties["host"] ?: "localhost").toString()
+    val username =env("username") ?: (properties["username"] ?: "user1").toString()
+    val password = env("password") ?: (properties["password"] ?: "letmein").toString()
+    val rpcPort = (env("rpcPort") ?: (properties["rpcPort"] ?: "10053")).toString().toInt()
+
     println("host is $host,username is $username,password is $password,rpc port is $rpcPort")
+
     val rpcAddress = NetworkHostAndPort(host, rpcPort)
     val rpcClient = CordaRPCClient(rpcAddress)
     val rpcConnection = rpcClient.start(username, password)
     rpcConnection.proxy
 }
+
+fun properties(){
+    val propertiesFile = System.getProperty("user.dir") + "/config.properties";
+    val inputStream = FileInputStream(propertiesFile)
+    properties.load(inputStream)
+    properties.forEach{(k, v) -> println("key = $k, value = $v")}
+}
+
+fun env(key:String) = System.getenv(key)
 
 fun Application.module() {
     install(DefaultHeaders)
@@ -61,7 +69,7 @@ fun Application.module() {
 
 fun main(args: Array<String>) {
 
-    val port = System.getenv("port") ?: (properties["port"] ?: "9090").toString()
+    val port = env("port") ?: (properties["port"] ?: "9090").toString()
 
     embeddedServer(Netty, port = port.toInt(), watchPaths = listOf("MainKt"), module = Application::module).start()
 
