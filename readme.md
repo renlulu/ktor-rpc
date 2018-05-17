@@ -14,6 +14,10 @@ Now we have 5 properties in the config.properties:
 
 you can use command 'gradle shadowJar' to generate your fat jar, you should put you conf.properties under the same directory as the fat jar, you can 
 
-also use replace properties with environment variables, the key names of the environment variables are the same as properties
+also use replace properties with environment variables, the key names of the environment variables are the same as properties,for example:
+
+port=8099 java -jar app-1.0-SNAPSHOT-shadow.jar 
+
+
 
 I also gave a restful-style interface to get the node party name :)
